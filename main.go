@@ -2,9 +2,6 @@
 package main
 
 import (
-	"WeChatAlarmServer/common"
-	"WeChatAlarmServer/config"
-	"WeChatAlarmServer/control"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -15,6 +12,10 @@ import (
 	"runtime"
 	"runtime/debug"
 	"time"
+
+	"github.com/ukinhappy/WeChatAlarmServer/common"
+	"github.com/ukinhappy/WeChatAlarmServer/config"
+	"github.com/ukinhappy/WeChatAlarmServer/control"
 
 	goconfig "github.com/zsounder/zgo/config"
 

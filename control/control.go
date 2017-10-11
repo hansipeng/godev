@@ -1,10 +1,11 @@
 package control
 
 import (
-	"WeChatAlarmServer/config"
 	"bytes"
 	"encoding/json"
 	"errors"
+
+	"github.com/ukinhappy/WeChatAlarmServer/config"
 
 	"time"
 
