@@ -8,16 +8,17 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime"
 	"runtime/debug"
 	"time"
 
-	"github.com/ukinhappy/WeChatAlarmServer/common"
-	"github.com/ukinhappy/WeChatAlarmServer/config"
-	"github.com/ukinhappy/WeChatAlarmServer/control"
+	"WeChatAlarmServer/common"
+	"WeChatAlarmServer/config"
+	"WeChatAlarmServer/control"
 
-	goconfig "github.com/zsounder/zgo/config"
+	//goconfig "github.com/zsounder/zgo/config"
 
 	l4g "github.com/alecthomas/log4go"
 	"github.com/kardianos/service"
@@ -36,9 +37,11 @@ type program struct {
 }
 
 //----------------------------hander ---------------
-func MessageHandle(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		body, _ := ioutil.ReadAll(r.Body)
+func MessageHandleUrl(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" || r.Method == "GET" {
+		//body, _ := ioutil.ReadAll(r.Body)
+		body, _ := url.QueryUnescape(r.URL.RawQuery)
+
 		l4g.Info("request:%v, %v, %v", r.RemoteAddr, r.RequestURI, string(body))
 		//解析传进来的body
 
@@ -51,7 +54,7 @@ func MessageHandle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Content-Type", "application/json")
 		w.Write([]byte(respbody))
 
 	} else {
@@ -59,6 +62,30 @@ func MessageHandle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func MessageHandle(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" || r.Method == "GET" {
+		body, _ := ioutil.ReadAll(r.Body)
+		//body, _ := url.QueryUnescape(r.URL.RawQuery)
+
+		l4g.Info("request:%v, %v, %v", r.RemoteAddr, r.RequestURI, string(body))
+		//解析传进来的body
+
+		resp := control.MessageNotify(string(body))
+
+		respbody, err := json.Marshal(resp)
+		if err != nil {
+			l4g.Error("json response failed :%v", err)
+			http.Error(w, "", http.StatusBadRequest)
+			return
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		w.Write([]byte(respbody))
+
+	} else {
+		http.Error(w, "", http.StatusMethodNotAllowed)
+	}
+}
 func safehandle(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -197,8 +224,8 @@ func Svc() {
 	l4g.Info("The version is :%s", version)
 
 	//config init
-	config.Init()
-	goconfig.Init(dir+seq+"config", []string{"config.xml"})
+	//config.Init()
+	//goconfig.Init(dir+seq+"config", []string{"config.xml"})
 
 	//control  Init
 	control.Init()
@@ -207,12 +234,12 @@ func Svc() {
 	mux := http.NewServeMux()
 
 	//注册路由
+	mux.HandleFunc("/sndmsg", safehandle(MessageHandleUrl))
 	mux.HandleFunc("/", safehandle(MessageHandle))
-
 	//启动 pprox
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
+	//go func() {
+	//	log.Println(http.ListenAndServe("localhost:6060", nil))
+	//}()
 
 	serveraddr := "0.0.0.0:" + config.GetServerPort()
 

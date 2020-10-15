@@ -11,7 +11,7 @@
         <tag>file</tag>  
         <type>file</type>  
         <level>DEBUG</level>  
-        <property name="filename"></property>  
+        <property name="filename">logs/wcas.log</property>  
         <!--  
            %T - Time (15:04:05 MST)  
            %t - Time (15:04)  

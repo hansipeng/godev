@@ -6,37 +6,41 @@ import (
 	"io/ioutil"
 
 	l4g "github.com/alecthomas/log4go"
-	goconfig "github.com/zsounder/zgo/config"
+	//goconfig "github.com/zsounder/zgo/config"
 )
 
 var CfgServer *Config = &Config{}
 
-func Init() {
-	goconfig.AddLoader("config.xml", loadServerConfig)
-}
+//func Init() {
+	//goconfig.AddLoader("config.xml", loadServerConfig)
+//}
 
-func loadServerConfig(path string) error {
+func loadServerConfig(path string) *Config {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		l4g.Error("loadServerConfig read file:%s fail err:%v\n", path, err)
-		return err
+		//return err
 	}
 	CfgServer = &Config{}
 
 	if err := xml.Unmarshal(data, CfgServer); err != nil {
 		l4g.Error("loadServerConfig %s Unmarshal fail err:%v\n", path, err)
-		return err
+		//return err
 	}
 	l4g.Info("Server config:%v", *CfgServer)
-	return nil
-}
-
-func GetServerConfig() *Config {
-	goconfig.ReadBegin()
-	defer goconfig.ReadEnd()
+	//return nil
 	return CfgServer
 }
 
+//func GetServerConfig() *Config {
+//	goconfig.ReadBegin()
+//	defer goconfig.ReadEnd()
+//	return CfgServer
+//}
+
+func GetServerConfig() *Config {
+	return loadServerConfig("config/config.xml")
+}
 // ------------------------------------------
 func GetServerPort() string {
 	return GetServerConfig().ServerPort
